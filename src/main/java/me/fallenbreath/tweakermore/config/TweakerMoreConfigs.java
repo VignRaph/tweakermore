@@ -55,6 +55,7 @@ import me.fallenbreath.tweakermore.impl.setting.debug.TweakerMoreDebugHelper;
 import me.fallenbreath.tweakermore.util.RegistryUtil;
 import me.fallenbreath.tweakermore.util.doc.DocumentGenerator;
 import me.fallenbreath.tweakermore.util.render.TweakerMoreRenderEventHandler;
+import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 
@@ -128,6 +129,9 @@ public class TweakerMoreConfigs
 
 	@Config(type = Config.Type.TWEAK, restriction = @Restriction(require = @Condition(itemscroller)), category = Config.Category.FEATURES)
 	public static final TweakerMoreConfigBooleanHotkeyed AUTO_FILL_CONTAINER = newConfigBooleanHotkeyed("autoFillContainer");
+
+	@Config(type = Config.Type.TWEAK, restriction = @Restriction(require = @Condition(itemscroller)), category = Config.Category.FEATURES)
+	public static final TweakerMoreConfigBooleanHotkeyed AUTO_FILL_CONTAINER_CLOSE = newConfigBooleanHotkeyed("autoFillContainerClose");
 
 	@Config(type = Config.Type.GENERIC, category = Config.Category.FEATURES)
 	public static final TweakerMoreConfigInteger AUTO_FILL_CONTAINER_THRESHOLD = newConfigInteger("autoFillContainerThreshold", 2, 1, 36);

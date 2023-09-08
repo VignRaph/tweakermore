@@ -44,6 +44,7 @@ public class ContainerFiller implements IContainerProcessor
 	@Override
 	public ProcessResult process(ClientPlayerEntity player, ContainerScreen<?> containerScreen, List<Slot> allSlots, List<Slot> playerInvSlots, List<Slot> containerInvSlots)
 	{
+
 		Slot bestSlot = null;
 		long maxCount = TweakerMoreConfigs.AUTO_FILL_CONTAINER_THRESHOLD.getIntegerValue() - 1;
 		for (Slot slot : playerInvSlots)
@@ -68,12 +69,15 @@ public class ContainerFiller implements IContainerProcessor
 			boolean isFull = Container.calculateComparatorOutput(containerInvSlots.get(0).inventory) >= 15;
 			String percentage = String.format("%s%d/%d%s", isFull ? Formatting.GREEN : Formatting.GOLD, amount, total, Formatting.RESET);
 			InfoUtils.printActionbarMessage("tweakermore.impl.autoFillContainer.container_filled", containerScreen.getTitle(), stackName, percentage);
-			return ProcessResult.terminated();
+			if (TweakerMoreConfigs.AUTO_FILL_CONTAINER_CLOSE.getBooleanValue())
+			    return ProcessResult.terminated();
+            else
+                return new ProcessResult(true,false);
 		}
 		else
 		{
 			InfoUtils.printActionbarMessage("tweakermore.impl.autoFillContainer.best_slot_not_found");
-			return ProcessResult.skipped();
+            return ProcessResult.skipped();
 		}
 	}
 }
