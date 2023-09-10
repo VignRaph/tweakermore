@@ -24,7 +24,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import me.fallenbreath.tweakermore.config.TweakerMoreConfigs;
-import me.fallenbreath.tweakermore.impl.features.infoView.AbstractInfoViewer;
+import me.fallenbreath.tweakermore.impl.features.infoView.AbstractBlockInfoViewer;
 import me.fallenbreath.tweakermore.impl.features.infoView.respawnBlock.handler.AbstractBlockHandler;
 import me.fallenbreath.tweakermore.impl.features.infoView.respawnBlock.handler.BedHandler;
 import me.fallenbreath.tweakermore.impl.features.infoView.respawnBlock.handler.RespawnAnchorHandler;
@@ -51,7 +51,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-public class RespawnBlockExplosionViewer extends AbstractInfoViewer
+public class RespawnBlockExplosionViewerBlock extends AbstractBlockInfoViewer
 {
 	private static final List<BlockHandlerProvider> BLOCK_HANDLER_FACTORIES = ImmutableList.of(
 			BedHandler::new,
@@ -61,7 +61,7 @@ public class RespawnBlockExplosionViewer extends AbstractInfoViewer
 	private final LongOpenHashSet renderedKeys = new LongOpenHashSet();
 	private final Map<Vec3d, DamageCache> damageCache = Maps.newHashMap();
 
-	public RespawnBlockExplosionViewer()
+	public RespawnBlockExplosionViewerBlock ()
 	{
 		super(
 				TweakerMoreConfigs.INFO_VIEW_RESPAWN_BLOCK_EXPLOSION,

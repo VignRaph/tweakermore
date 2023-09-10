@@ -24,7 +24,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import me.fallenbreath.tweakermore.config.TweakerMoreConfigs;
 import me.fallenbreath.tweakermore.config.options.listentries.InfoViewTargetStrategy;
-import me.fallenbreath.tweakermore.impl.features.infoView.AbstractInfoViewer;
+import me.fallenbreath.tweakermore.impl.features.infoView.AbstractBlockInfoViewer;
 import me.fallenbreath.tweakermore.util.render.context.RenderContext;
 import me.fallenbreath.tweakermore.util.render.TextRenderer;
 import net.minecraft.block.BlockState;
@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-public class RedstoneDustUpdateOrderRenderer extends AbstractInfoViewer
+public class RedstoneDustUpdateOrderRenderer extends AbstractBlockInfoViewer
 {
 	public RedstoneDustUpdateOrderRenderer()
 	{

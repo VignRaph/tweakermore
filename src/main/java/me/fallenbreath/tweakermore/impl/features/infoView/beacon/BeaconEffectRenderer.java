@@ -24,7 +24,7 @@ import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
 import fi.dy.masa.malilib.util.StringUtils;
 import me.fallenbreath.tweakermore.config.TweakerMoreConfigs;
-import me.fallenbreath.tweakermore.impl.features.infoView.AbstractInfoViewer;
+import me.fallenbreath.tweakermore.impl.features.infoView.AbstractBlockInfoViewer;
 import me.fallenbreath.tweakermore.mixins.tweaks.features.infoView.beacon.BeaconBlockEntityAccessor;
 import me.fallenbreath.tweakermore.util.render.InWorldPositionTransformer;
 import me.fallenbreath.tweakermore.util.render.context.RenderContext;
@@ -57,7 +57,7 @@ import java.util.List;
 //$$ import net.minecraft.client.texture.SpriteAtlasTexture;
 //#endif
 
-public class BeaconEffectRenderer extends AbstractInfoViewer
+public class BeaconEffectRenderer extends AbstractBlockInfoViewer
 {
 	private static final double FONT_SCALE = TextRenderer.DEFAULT_FONT_SCALE;
 	private static final double MARGIN = 5;  // margin between icon and text

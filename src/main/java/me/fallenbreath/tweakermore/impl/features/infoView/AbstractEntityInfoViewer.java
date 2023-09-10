@@ -28,29 +28,31 @@ import me.fallenbreath.tweakermore.config.options.listentries.InfoViewTargetStra
 import me.fallenbreath.tweakermore.util.render.context.RenderContext;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.entity.Entity;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Position;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
 
-public abstract class AbstractInfoViewer
+public abstract class AbstractEntityInfoViewer
 {
 	private final IConfigBoolean switchConfig;
 	private final Supplier<InfoViewRenderStrategy> renderStrategySupplier;
 	private final Supplier<InfoViewTargetStrategy> targetStrategySupplier;
 
-	public AbstractInfoViewer(IConfigBoolean switchConfig, Supplier<InfoViewRenderStrategy> renderStrategySupplier, Supplier<InfoViewTargetStrategy> targetStrategySupplier)
+	public AbstractEntityInfoViewer (IConfigBoolean switchConfig, Supplier<InfoViewRenderStrategy> renderStrategySupplier, Supplier<InfoViewTargetStrategy> targetStrategySupplier)
 	{
 		this.switchConfig = switchConfig;
 		this.renderStrategySupplier = renderStrategySupplier;
 		this.targetStrategySupplier = targetStrategySupplier;
 	}
-	public AbstractInfoViewer(IConfigBoolean switchConfig, TweakerMoreConfigOptionList renderStrategyOption, TweakerMoreConfigOptionList targetStrategyOption)
+	public AbstractEntityInfoViewer (IConfigBoolean switchConfig, TweakerMoreConfigOptionList renderStrategyOption, TweakerMoreConfigOptionList targetStrategyOption)
 	{
 		this(switchConfig, () -> (InfoViewRenderStrategy)renderStrategyOption.getOptionListValue(), () -> (InfoViewTargetStrategy)targetStrategyOption.getOptionListValue());
 	}
-	public AbstractInfoViewer(IConfigBoolean switchConfig, TweakerMoreConfigOptionList renderStrategyOption, Supplier<InfoViewTargetStrategy> targetStrategySupplier)
+	public AbstractEntityInfoViewer (IConfigBoolean switchConfig, TweakerMoreConfigOptionList renderStrategyOption, Supplier<InfoViewTargetStrategy> targetStrategySupplier)
 	{
 		this(switchConfig, () -> (InfoViewRenderStrategy)renderStrategyOption.getOptionListValue(), targetStrategySupplier);
 	}
@@ -59,15 +61,14 @@ public abstract class AbstractInfoViewer
 	 * If this viewer works for and should render for given context
 	 *
 	 * @param world       The current world get from {@link fi.dy.masa.malilib.util.WorldUtils#getBestWorld}
-	 * @param blockPos    The block pos the player looking at
-	 * @param blockState  The block state the player looking at
-	 * @param blockEntity The block entity the player looking at, nullable
+	 * @param position    The position of the entity
+	 * @param entity      The entity the player is looking at
 	 */
-	public abstract boolean shouldRenderFor(World world, BlockPos blockPos, BlockState blockState, @Nullable BlockEntity blockEntity);
+	public abstract boolean shouldRenderFor(World world, Position position, Entity entity);
 
-	public abstract boolean requireBlockEntitySyncing();
+	public abstract boolean requireEntitySyncing();
 
-	public abstract void render(RenderContext context, World world, BlockPos blockPos, BlockState blockState, BlockEntity blockEntity);
+	public abstract void render(RenderContext context, World world, Position position, Entity entity);
 
 	public boolean isRenderEnabled()
 	{

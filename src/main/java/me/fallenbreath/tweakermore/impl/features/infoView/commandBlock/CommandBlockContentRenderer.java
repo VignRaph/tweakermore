@@ -23,7 +23,7 @@ package me.fallenbreath.tweakermore.impl.features.infoView.commandBlock;
 import com.mojang.brigadier.ParseResults;
 import com.mojang.brigadier.StringReader;
 import me.fallenbreath.tweakermore.config.TweakerMoreConfigs;
-import me.fallenbreath.tweakermore.impl.features.infoView.AbstractInfoViewer;
+import me.fallenbreath.tweakermore.impl.features.infoView.AbstractBlockInfoViewer;
 import me.fallenbreath.tweakermore.mixins.tweaks.features.infoView.commandBlock.CommandSuggestorAccessor;
 import me.fallenbreath.tweakermore.util.render.context.RenderContext;
 import me.fallenbreath.tweakermore.util.render.TextRenderer;
@@ -47,7 +47,7 @@ import org.jetbrains.annotations.Nullable;
 //$$ import net.minecraft.text.OrderedText;
 //#endif
 
-public class CommandBlockContentRenderer extends AbstractInfoViewer
+public class CommandBlockContentRenderer extends AbstractBlockInfoViewer
 {
 	public CommandBlockContentRenderer()
 	{
