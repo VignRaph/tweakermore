@@ -32,6 +32,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.inventory.DoubleInventory;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.StringTag;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
@@ -176,6 +178,13 @@ public class ServerDataSyncer extends LimitedTaskRunner implements IClientTickHa
 					// so a try-catch is required here
 					try
 					{
+						ListTag tags = nbt.getList("Tags",8);
+						//#if MC < 11500
+						//$$ tags.add(new StringTag("TweakerMoreServerSynced"));
+						//#else
+						tags.add(StringTag.of("TweakerMoreServerSynced"));
+						//#endif
+						nbt.put("Tags",tags);
 						entity.fromTag(nbt);
 						TweakerMoreMod.LOGGER.debug("Synced entity data of {}", entity);
 					}

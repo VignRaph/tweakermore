@@ -36,6 +36,20 @@ tweakermore:
         当且仅当占用格子数最多的物品是唯一的
         然后关闭容器
       pretty_name: 自动装填容器
+    autoFillContainerClose:
+      .: autoFillContainerClose
+      comment: |-
+        Whether or not the inventory GUI will be closed after Items have been put into the container.
+      pretty_name: Auto Fill Container Close GUI
+    autoFillContainerListType:
+      .: autoFillContainerListType
+      comment: The item restriction type for autoFillContainer
+    autoFillContainerWhiteList:
+      .: autoFillContainerWhiteList
+      comment: Items that will be put into the container with autoFillContainer
+    autoFillContainerBlackList:
+      .: autoFillContainerBlackList
+      comment: Items that will NOT be put into the container with autoFillContainer
     autoFillContainerThreshold:
       .: 自动装填容器阈值
       comment: |-
@@ -159,6 +173,49 @@ tweakermore:
     infoViewRespawnBlockExplosionTargetStrategy:
       .: 信息展示-重生方块爆炸伤害-目标选择策略
       comment: 选项@option#infoViewRespawnBlockExplosion@的目标选择策略
+    infoViewEntityTargetDistance:
+      .: infoViewEntityTargetDistance
+      comment: |-
+        The maximum number of blocks between the player and the villager
+        where the trade info view can be shown
+    infoViewVillager:
+      .: infoViewVillager
+      comment: |-
+        View easily the trades a villager offers
+        Requires @option#serverDataSyncer@ to be enabled to work at all
+      pretty_name: Info View Villager Trades
+    infoViewVillagerUpdate:
+      .: infoViewVillagerUpdate
+      comment: |-
+        Will constantly sync with the server when this setting is enabled
+        Should be disabled has much as possible to lower impact on server performance
+      pretty_name: Info View Villager Trades Auto Update Trades
+    infoViewVillagerBooks:
+      .: infoViewVillagerBooks
+      comment: Toggles if max level book trades are shown in trades info view
+    infoViewVillagerEnchantedItems:
+      .: infoViewVillagerEnchantedItems
+      comment: Toggles if items with enchantment are shown in trades info view
+    infoViewVillagerEnchantedItemsMax:
+      .: infoViewVillagerEnchantedItemsMax
+      comment: |-
+        Will require enchanted items to have at least
+        one enchant at maximum level to appear in the trades info view
+    infoViewVillagerEnchantedItemsList:
+      .: infoViewVillagerEnchantedItemsList
+      comment: The items with enchantments that will appear in trades info view
+    infoViewVillagerItems:
+      .: infoViewVillagerItems
+      comment: Toggles if items selected in the list are shown in trades info view
+    infoViewVillagerItemsList:
+      .: infoViewVillagerItemsList
+      comment: The items that will appear in trades info view
+    infoViewVillagerRenderStrategy:
+      .: infoViewVillagerRenderStrategy
+      comment: If the info view hotkey should be required to display the trades
+    infoViewVillagerTargetStrategy:
+      .: infoViewVillagerTargetStrategy
+      comment: Require the merchant to be looked at or not to show info view
     refreshInventory:
       .: 刷新物品栏
       comment: |-

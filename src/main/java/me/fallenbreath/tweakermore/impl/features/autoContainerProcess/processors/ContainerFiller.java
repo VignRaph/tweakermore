@@ -48,7 +48,7 @@ public class ContainerFiller implements IContainerProcessor
 		Slot bestSlot = null;
 		long maxCount = TweakerMoreConfigs.AUTO_FILL_CONTAINER_THRESHOLD.getIntegerValue() - 1;
 		for (Slot slot : playerInvSlots)
-			if (slot.hasStack() && containerInvSlots.get(0).canInsert(slot.getStack()))
+			if (slot.hasStack() && containerInvSlots.get(0).canInsert(slot.getStack()) && TweakerMoreConfigs.AUTO_FILL_CONTAINER_RESTRICTION.isAllowed(slot.getStack().getItem()))
 			{
 				long cnt = playerInvSlots.stream().filter(slt -> InventoryUtils.areStacksEqual(slot.getStack(), slt.getStack())).count();
 				if (cnt > maxCount)

@@ -22,10 +22,9 @@ package me.fallenbreath.tweakermore.impl.features.infoView.villager;
 
 import com.google.common.collect.Lists;
 import com.mojang.datafixers.util.Pair;
-import fi.dy.masa.malilib.util.StringUtils;
 import me.fallenbreath.tweakermore.config.TweakerMoreConfigs;
 import me.fallenbreath.tweakermore.impl.features.infoView.AbstractEntityInfoViewer;
-import me.fallenbreath.tweakermore.mixins.tweaks.features.infoView.villager.VillagerEntityAccessor;
+import me.fallenbreath.tweakermore.impl.mod_tweaks.serverDataSyncer.ServerDataSyncer;
 import me.fallenbreath.tweakermore.util.Messenger;
 import me.fallenbreath.tweakermore.util.render.InWorldPositionTransformer;
 import me.fallenbreath.tweakermore.util.render.RenderUtil;
@@ -34,9 +33,7 @@ import me.fallenbreath.tweakermore.util.render.context.RenderContext;
 import me.fallenbreath.tweakermore.util.render.context.RenderGlobals;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.Sprite;
-import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.effect.StatusEffect;
 import net.minecraft.entity.passive.AbstractTraderEntity;
 import net.minecraft.item.EnchantedBookItem;
 import net.minecraft.item.Item;
@@ -44,7 +41,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.text.BaseText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -56,9 +52,12 @@ import net.minecraft.village.TradeOffer;
 import net.minecraft.village.TraderOfferList;
 import net.minecraft.world.World;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
+
+//#if MC >= 12000
+//$$ import net.minecraft.client.render.model.json.ModelTransformationMode;
+//#endif
 
 //#if MC >= 11700
 //$$ import com.mojang.blaze3d.systems.RenderSystem;
@@ -78,56 +77,11 @@ public class VillagerTradeRenderer extends AbstractEntityInfoViewer {
     private static final int ICON_SIZE = 18;  // the status effect icon texture is a 18x18 square
     private static final int ICON_RENDERED_SIZE = RenderUtil.TEXT_HEIGHT;
 
-    private static final Item[] ITEMS_WITH_ENCHANTS = new Item[]{
-            Items.DIAMOND_SWORD, Items.DIAMOND_AXE, Items.DIAMOND_PICKAXE, Items.DIAMOND_SHOVEL, Items.DIAMOND_HOE, Items.DIAMOND_BOOTS, Items.DIAMOND_LEGGINGS, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_HELMET,
-            Items.FISHING_ROD, Items.BOW, Items.CROSSBOW
-    };
-
-    private static final Item[] ITEMS_WO_ENCHANTS = new Item[]{
-            // Mason
-            Items.QUARTZ_BLOCK, Items.QUARTZ_PILLAR, Items.POLISHED_ANDESITE, Items.POLISHED_DIORITE, Items.POLISHED_GRANITE, Items.TERRACOTTA,
-            Items.BLACK_TERRACOTTA, Items.GRAY_TERRACOTTA, Items.LIGHT_GRAY_TERRACOTTA, Items.WHITE_TERRACOTTA, Items.BROWN_TERRACOTTA,
-            Items.RED_TERRACOTTA, Items.ORANGE_TERRACOTTA, Items.YELLOW_TERRACOTTA, Items.LIME_TERRACOTTA, Items.GREEN_TERRACOTTA, Items.CYAN_TERRACOTTA, Items.LIGHT_BLUE_TERRACOTTA, Items.BLUE_TERRACOTTA, Items.MAGENTA_TERRACOTTA, Items.PURPLE_TERRACOTTA, Items.PINK_TERRACOTTA,
-            // ToolSmith
-            Items.DIAMOND_HOE,
-            // Weapon smith
-            // Armorer
-            Items.SHIELD,
-            // Librarian
-            Items.LANTERN, Items.BOOKSHELF, Items.GLASS, Items.CLOCK, Items.COMPASS,
-            // Leather worker
-            // Shepherd
-            Items.BLACK_WOOL, Items.GRAY_WOOL, Items.LIGHT_GRAY_WOOL, Items.WHITE_WOOL, Items.BROWN_WOOL,
-            Items.RED_WOOL, Items.ORANGE_WOOL, Items.YELLOW_WOOL, Items.LIME_WOOL, Items.GREEN_WOOL, Items.CYAN_WOOL, Items.LIGHT_BLUE_WOOL, Items.BLUE_WOOL, Items.MAGENTA_WOOL, Items.PURPLE_WOOL, Items.PINK_WOOL,
-
-            Items.BLACK_CARPET, Items.GRAY_CARPET, Items.LIGHT_GRAY_CARPET, Items.WHITE_CARPET, Items.BROWN_CARPET,
-            Items.RED_CARPET, Items.ORANGE_CARPET, Items.YELLOW_CARPET, Items.LIME_CARPET, Items.GREEN_CARPET, Items.CYAN_CARPET, Items.LIGHT_BLUE_CARPET, Items.BLUE_CARPET, Items.MAGENTA_CARPET, Items.PURPLE_CARPET, Items.PINK_CARPET,
-
-            Items.BLACK_BED, Items.GRAY_BED, Items.LIGHT_GRAY_BED, Items.WHITE_BED, Items.BROWN_BED,
-            Items.RED_BED, Items.ORANGE_BED, Items.YELLOW_BED, Items.LIME_BED, Items.GREEN_BED, Items.CYAN_BED, Items.LIGHT_BLUE_BED, Items.BLUE_BED, Items.MAGENTA_BED, Items.PURPLE_BED, Items.PINK_BED,
-
-            Items.BLACK_BANNER, Items.GRAY_BANNER, Items.LIGHT_GRAY_BANNER, Items.WHITE_BANNER, Items.BROWN_BANNER,
-            Items.RED_BANNER, Items.ORANGE_BANNER, Items.YELLOW_BANNER, Items.LIME_BANNER, Items.GREEN_BANNER, Items.CYAN_BANNER, Items.LIGHT_BLUE_BANNER, Items.BLUE_BANNER, Items.MAGENTA_BANNER, Items.PURPLE_BANNER, Items.PINK_BANNER,
-
-            // Farmer
-            Items.APPLE, Items.PUMPKIN_PIE, Items.BREAD,
-            // Cleric
-            // Butcher
-            Items.RABBIT_STEW, Items.COOKED_PORKCHOP, Items.COOKED_CHICKEN,
-            // Fisherman
-            Items.CAMPFIRE,
-            // Cartographer
-            Items.CREEPER_BANNER_PATTERN, Items.FLOWER_BANNER_PATTERN, Items.GLOBE_BANNER_PATTERN, Items.MOJANG_BANNER_PATTERN, Items.SKULL_BANNER_PATTERN,
-            // Fletcher
-            Items.TIPPED_ARROW, Items.ARROW
-            // Wandering Trader
-    };
-
     public VillagerTradeRenderer () {
         super(
-                TweakerMoreConfigs.INFO_VIEW_BEACON,
-                TweakerMoreConfigs.INFO_VIEW_BEACON_RENDER_STRATEGY,
-                TweakerMoreConfigs.INFO_VIEW_BEACON_TARGET_STRATEGY
+                TweakerMoreConfigs.INFO_VIEW_VILLAGER,
+                TweakerMoreConfigs.INFO_VIEW_VILLAGER_RENDER_STRATEGY,
+                TweakerMoreConfigs.INFO_VIEW_VILLAGER_TARGET_STRATEGY
         );
     }
 
@@ -143,44 +97,64 @@ public class VillagerTradeRenderer extends AbstractEntityInfoViewer {
 
     @Override
     public void render (RenderContext context, World world, Position position, Entity entity) {
-        VillagerEntityAccessor accessor = (VillagerEntityAccessor) entity;
-        TraderOfferList offers = accessor.getOffers();
-        Vec3d pos = new Vec3d(position.getX() + 1.5, position.getY() + 1.5, position.getZ() + 1.5);
+        if (!(entity instanceof AbstractTraderEntity)) {
+            return;
+        }
+
+        if (TweakerMoreConfigs.INFO_VIEW_VILLAGER_UPDATE.getBooleanValue() || !entity.getScoreboardTags().contains("TweakerMoreServerSynced")) {
+            ServerDataSyncer.getInstance().syncEntity(entity);
+        }
+
+        AbstractTraderEntity traderEntity = (AbstractTraderEntity) entity;
+        TraderOfferList offers = traderEntity.getOffers();
+        Vec3d pos = new Vec3d(position.getX(), position.getY() + 2.25, position.getZ());
 
         List<Pair<ItemStack, List<BaseText>>> tradesToShow = Lists.newArrayList();
+
+        if (offers == null) {
+            return;
+        }
+
         //Filter trades to show only relevant ones
         int nbTradeToShow = 0;
-        for (int j = 0; j < offers.size(); j++) {
-            TradeOffer offer = offers.get(j);
+        for (TradeOffer offer : offers) {
             ItemStack soldItem = offer.getSellItem();
             Item item = soldItem.getItem();
             List<BaseText> texts = Lists.newArrayList();
 
-            if (item instanceof EnchantedBookItem) {
+            if (TweakerMoreConfigs.INFO_VIEW_VILLAGER_BOOKS.getBooleanValue() &&
+                    item instanceof EnchantedBookItem) {
                 ListTag enchants = EnchantedBookItem.getEnchantmentTag(soldItem);
 
                 for (int k = 0; k < enchants.size(); ++k) {
                     CompoundTag compoundTag = enchants.getCompound(k);
                     Registry.ENCHANTMENT.getOrEmpty(Identifier.tryParse(compoundTag.getString("id"))).ifPresent((enchant) -> {
                         if (compoundTag.getInt("lvl") >= enchant.getMaximumLevel()) {
-                            texts.add(getEnchantmentText(soldItem));
+                            texts.addAll(Objects.requireNonNull(getEnchantmentText(soldItem)));
                         }
                     });
                 }
 
-            } else if (Arrays.stream(ITEMS_WITH_ENCHANTS).anyMatch((t) -> t == item)) {
+//            } else if (Arrays.stream(ITEMS_WITH_ENCHANTS).anyMatch((t) -> t == item)) {
+            } else if (TweakerMoreConfigs.INFO_VIEW_VILLAGER_ENCHANTED_ITEMS.getBooleanValue() &&
+                    TweakerMoreConfigs.INFO_VIEW_VILLAGER_ENCHANTED_ITEMS_RESTRICTION.isAllowed(item)) {
                 ListTag enchants = soldItem.getEnchantments();
 
                 for (int k = 0; k < enchants.size(); ++k) {
                     CompoundTag compoundTag = enchants.getCompound(k);
                     Registry.ENCHANTMENT.getOrEmpty(Identifier.tryParse(compoundTag.getString("id"))).ifPresent((enchant) -> {
-                        if (compoundTag.getInt("lvl") >= enchant.getMaximumLevel()) {
-                            texts.add(getEnchantmentText(soldItem));
+                        if (((!TweakerMoreConfigs.INFO_VIEW_VILLAGER_ENCHANTED_ITEMS_MAX.getBooleanValue())
+                                || compoundTag.getInt("lvl") >= enchant.getMaximumLevel()) && texts.isEmpty()) {
+                            texts.addAll(Objects.requireNonNull(getEnchantmentText(soldItem)));
                         }
                     });
                 }
-            } else if (Arrays.stream(ITEMS_WO_ENCHANTS).anyMatch((t) -> t == item)) {
-                texts.add((BaseText) item.getName());
+//                Arrays.stream(ITEMS_WO_ENCHANTS).anyMatch((t) -> t == item)
+            } else if (TweakerMoreConfigs.INFO_VIEW_VILLAGER_ITEMS.getBooleanValue() &&
+                    TweakerMoreConfigs.INFO_VIEW_VILLAGER_ITEMS_RESTRICTION.isAllowed(item)) {
+                BaseText baseText = (BaseText) item.getName(soldItem);
+                Text text = baseText.formatted(Formatting.WHITE);
+                texts.add((BaseText) text);
             }
 
             if (!texts.isEmpty()) {
@@ -190,24 +164,21 @@ public class VillagerTradeRenderer extends AbstractEntityInfoViewer {
         }
 
         if (nbTradeToShow > 0) {
-            double maxWidth = tradesToShow.stream().
-                    mapToDouble(pair -> this.calculateRowWidth(pair.getSecond())).
-                    max().orElse(0);
-            int linesCount = tradesToShow.stream().mapToInt(pair -> pair.getSecond().size()).sum();
             double DeltaY = 0;
-            for (int i = 0; i < tradesToShow.size(); i++) {
-                Pair<ItemStack, List<BaseText>> pair = tradesToShow.get(i);
-
+            for (Pair<ItemStack, List<BaseText>> pair : tradesToShow) {
                 double width = this.calculateRowWidth(pair.getSecond());
                 double lines = pair.getSecond().size();
                 double deltaX = -width / 2;  // unit: pixel (in scale=FONT_SCALE context)
-                double kDeltaY = i - (linesCount - lines) / 2.0;  // unit: ratio
+                double kDeltaY = DeltaY - lines / 2.0 + 0.3;  // unit: ratio
 
-                this.renderItemIcon(pos, pair.getFirst(), deltaX, kDeltaY);
-                for (BaseText text : pair.getSecond()){
-                    this.renderItemText(pos, text, deltaX, DeltaY);
-                    DeltaY += 1;
+                if (pair.getFirst().getItem() != Items.SHIELD) {
+                    this.renderItemIcon(pos, pair.getFirst(), deltaX, kDeltaY);
                 }
+                for (BaseText text : pair.getSecond()) {
+                    this.renderItemText(pos, text, deltaX, DeltaY);
+                    DeltaY -= 1;
+                }
+                DeltaY -= 0.5;
             }
         }
     }
@@ -220,7 +191,8 @@ public class VillagerTradeRenderer extends AbstractEntityInfoViewer {
     @SuppressWarnings ("AccessStaticViaInstance")
     private void renderItemIcon (Vec3d pos, ItemStack itemStack, double deltaX, double kDeltaY) {
         MinecraftClient mc = MinecraftClient.getInstance();
-        Sprite sprite = mc.getItemRenderer().getModels().getSprite(itemStack);
+
+        Sprite sprite = mc.getItemRenderer().getModels().getModel(itemStack).getSprite();
 
         RenderContext renderContext = RenderContext.of(
                 //#if MC >= 11600
@@ -268,6 +240,7 @@ public class VillagerTradeRenderer extends AbstractEntityInfoViewer {
                     //#endif
                     0, 0, 0, ICON_SIZE, ICON_SIZE, sprite
             );
+
             RenderGlobals.enableDepthTest();
         }
         positionTransformer.restore();
@@ -283,11 +256,11 @@ public class VillagerTradeRenderer extends AbstractEntityInfoViewer {
         textRenderer.render();
     }
 
-    private static String getItemText (BaseText statusEffect) {
-        return statusEffect.getString();
+    private static String getItemText (BaseText text) {
+        return text.getString();
     }
 
-    private static BaseText getEnchantmentText (ItemStack itemStack) {
+    private static List<BaseText> getEnchantmentText (ItemStack itemStack) {
         List<Text> enchantmentTexts = Lists.newArrayList();
         ListTag enchantmentTag = itemStack.getItem() instanceof EnchantedBookItem ? EnchantedBookItem.getEnchantmentTag(itemStack) : itemStack.getEnchantments();
         ItemStack.appendEnchantments(enchantmentTexts, enchantmentTag);
@@ -296,18 +269,22 @@ public class VillagerTradeRenderer extends AbstractEntityInfoViewer {
         if (amount == 0) {
             return null;
         }
-        BaseText extraText = Messenger.s(" ", Formatting.WHITE);
+        List<BaseText> texts = Lists.newArrayList();
 
-        int maxLength = TweakerMoreConfigs.SHULKER_TOOLTIP_HINT_LENGTH_LIMIT.getIntegerValue();
-        net.minecraft.client.font.TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
         int idx;
         for (idx = 0; idx < amount; idx++) {
-            extraText.append(enchantmentTexts.get(idx));
+            BaseText enchantText = Messenger.s(" ");
+            Text enchant = enchantmentTexts.get(idx);
+            if (!Objects.equals(Objects.requireNonNull(enchant.getStyle().getColor()).getName(), Formatting.RED.getName()))
+                enchantText.append(Messenger.s(enchant.getString(), Formatting.WHITE));
+            else
+                enchantText.append(enchant);
             if (idx < amount - 1) {
-                extraText.append(Messenger.s(", ", Formatting.GRAY));
+                enchantText.append(Messenger.s(", ", Formatting.GRAY));
             }
+            texts.add(enchantText);
         }
 
-        return extraText;
+        return texts;
     }
 }

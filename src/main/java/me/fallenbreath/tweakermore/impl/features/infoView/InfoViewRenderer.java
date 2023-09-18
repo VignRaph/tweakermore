@@ -41,10 +41,10 @@ import me.fallenbreath.tweakermore.util.render.TweakerMoreIRenderer;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -100,7 +100,34 @@ public class InfoViewRenderer implements TweakerMoreIRenderer, IClientTickHandle
         MinecraftClient mc = MinecraftClient.getInstance();
         World world = WorldUtils.getBestWorld(mc);
         World clientWorld = mc.world;
-        if (world == null || clientWorld == null || mc.player == null) {
+        ClientPlayerEntity player = mc.player;
+        if (world == null || clientWorld == null || player == null) {
+            return;
+        }
+
+        for (Entity entity:mc.world.getEntities()) {
+            if (mc.player.distanceTo(entity) < TweakerMoreConfigs.INFO_VIEW_ENTITY_TARGET_DISTANCE.getDoubleValue()){
+                for (AbstractEntityInfoViewer viewer : entityViewers) {
+                    Vec3d vec3d = player.getRotationVec(1.0F).normalize();
+                    //#if MC < 11500
+                    //$$ Vec3d vec3d2 = new Vec3d(entity.x - player.x, entity.y - player.y, entity.z - player.z);
+                    //#else
+                    Vec3d vec3d2 = new Vec3d(entity.getX() - player.getX(), entity.getEyeY() - player.getEyeY(), entity.getZ() - player.getZ());
+                    //#endif
+                    double d = vec3d2.length();
+                    vec3d2 = vec3d2.normalize();
+                    double e = vec3d.dotProduct(vec3d2);
+                    boolean pointingAt = e > 1.0D - 0.025D / d && player.canSee(entity);
+
+                    boolean enabled = viewer.isValidTarget(pointingAt);
+                    if (enabled && viewer.shouldRenderFor(world, entity.getPos(), entity)) {
+                        viewer.render(context, world, entity.getPos(), entity);
+                    }
+                }
+            }
+        }
+
+        if (blockViewers.isEmpty()) {
             return;
         }
 
@@ -111,23 +138,7 @@ public class InfoViewRenderer implements TweakerMoreIRenderer, IClientTickHandle
         HitResult target = mc.player.rayTrace(reach, RenderUtil.tickDelta, false);
         BlockPos crossHairPos = target instanceof BlockHitResult ? ((BlockHitResult) target).getBlockPos() : null;
 
-        Entity crossHairEntity = target instanceof EntityHitResult ? ((EntityHitResult) target).getEntity() : null;
-        if (crossHairEntity != null) {
-            ThrowawayRunnable sync = ThrowawayRunnable.of(() -> this.syncBlockEntity(world, crossHairEntity.getBlockPos()));
-            for (AbstractEntityInfoViewer viewer : entityViewers) {
-                boolean enabled = viewer.isValidTarget(true);
-                if (enabled && viewer.shouldRenderFor(world, crossHairEntity.getPos(), crossHairEntity)) {
-                    if (viewer.requireEntitySyncing() && !(world instanceof ServerWorld)) {
-                        sync.run();
-                    }
-                    viewer.render(context, world, crossHairEntity.getPos(), crossHairEntity);
-                }
-            }
-        }
 
-        if (blockViewers.isEmpty()) {
-            return;
-        }
 
         List<BlockPos> positions = Lists.newArrayList();
         positions.addAll(PositionUtil.beam(camPos, camPos.add(camVec.normalize().multiply(reach)), angle, PositionUtil.BeamMode.BEAM));
@@ -176,6 +187,13 @@ public class InfoViewRenderer implements TweakerMoreIRenderer, IClientTickHandle
     @SuppressWarnings ("unused")
     private void syncBlockEntity (World world, BlockPos blockPos) {
         // serverDataSyncer do your job here
+    }
+
+    private void syncEntity (World world, Entity entity) {
+        // serverDataSyncer do your job here
+        if (world.isClient()){
+
+        }
     }
 
     @Override
