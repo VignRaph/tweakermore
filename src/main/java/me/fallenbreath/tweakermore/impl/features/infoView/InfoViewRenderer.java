@@ -50,6 +50,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.World;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -105,23 +106,34 @@ public class InfoViewRenderer implements TweakerMoreIRenderer, IClientTickHandle
             return;
         }
 
-        for (Entity entity:mc.world.getEntities()) {
-            if (mc.player.distanceTo(entity) < TweakerMoreConfigs.INFO_VIEW_ENTITY_TARGET_DISTANCE.getDoubleValue()){
-                for (AbstractEntityInfoViewer viewer : entityViewers) {
-                    Vec3d vec3d = player.getRotationVec(1.0F).normalize();
-                    //#if MC < 11500
-                    //$$ Vec3d vec3d2 = new Vec3d(entity.x - player.x, entity.y - player.y, entity.z - player.z);
-                    //#else
-                    Vec3d vec3d2 = new Vec3d(entity.getX() - player.getX(), entity.getEyeY() - player.getEyeY(), entity.getZ() - player.getZ());
-                    //#endif
-                    double d = vec3d2.length();
-                    vec3d2 = vec3d2.normalize();
-                    double e = vec3d.dotProduct(vec3d2);
-                    boolean pointingAt = e > 1.0D - 0.025D / d && player.canSee(entity);
+        if (!entityViewers.isEmpty()) {
+            //Get entities and sort by distance so we render further first
+            List<Entity> entities = (List<Entity>) mc.world.getEntities();
+            List<Pair<Entity, Double>> entitiesComp = new ArrayList<>();
+            entities.forEach(e -> entitiesComp.add(Pair.of(e, (double) mc.player.distanceTo(e))));
+            entitiesComp.sort(Comparator.comparingDouble(Pair::getSecond));
+            Collections.reverse(entitiesComp);
+            entities.clear();
+            entitiesComp.forEach(p -> entities.add(p.getFirst()));
 
-                    boolean enabled = viewer.isValidTarget(pointingAt);
-                    if (enabled && viewer.shouldRenderFor(world, entity.getPos(), entity)) {
-                        viewer.render(context, world, entity.getPos(), entity);
+            for (Entity entity : entities) {
+                if (mc.player.distanceTo(entity) < TweakerMoreConfigs.INFO_VIEW_ENTITY_TARGET_DISTANCE.getDoubleValue()) {
+                    for (AbstractEntityInfoViewer viewer : entityViewers) {
+                        Vec3d vec3d = player.getRotationVec(1.0F).normalize();
+                        //#if MC < 11500
+                        //$$ Vec3d vec3d2 = new Vec3d(entity.x - player.x, entity.y - player.y, entity.z - player.z);
+                        //#else
+                        Vec3d vec3d2 = new Vec3d(entity.getX() - player.getX(), entity.getEyeY() - player.getEyeY(), entity.getZ() - player.getZ());
+                        //#endif
+                        double d = vec3d2.length();
+                        vec3d2 = vec3d2.normalize();
+                        double e = vec3d.dotProduct(vec3d2);
+                        boolean pointingAt = e > 1.0D - 0.025D / d && player.canSee(entity);
+
+                        boolean enabled = viewer.isValidTarget(pointingAt);
+                        if (enabled && viewer.shouldRenderFor(world, entity.getPos(), entity)) {
+                            viewer.render(context, world, entity.getPos(), entity);
+                        }
                     }
                 }
             }
@@ -137,7 +149,6 @@ public class InfoViewRenderer implements TweakerMoreIRenderer, IClientTickHandle
         double angle = Math.PI * TweakerMoreConfigs.INFO_VIEW_BEAM_ANGLE.getDoubleValue() / 2 / 180;
         HitResult target = mc.player.rayTrace(reach, RenderUtil.tickDelta, false);
         BlockPos crossHairPos = target instanceof BlockHitResult ? ((BlockHitResult) target).getBlockPos() : null;
-
 
 
         List<BlockPos> positions = Lists.newArrayList();
@@ -191,7 +202,7 @@ public class InfoViewRenderer implements TweakerMoreIRenderer, IClientTickHandle
 
     private void syncEntity (World world, Entity entity) {
         // serverDataSyncer do your job here
-        if (world.isClient()){
+        if (world.isClient()) {
 
         }
     }
