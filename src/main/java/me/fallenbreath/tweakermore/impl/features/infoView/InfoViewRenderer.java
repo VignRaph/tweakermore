@@ -107,16 +107,15 @@ public class InfoViewRenderer implements TweakerMoreIRenderer, IClientTickHandle
         }
 
         if (!entityViewers.isEmpty()) {
-            //Get entities and sort by distance so we render further first
-            List<Entity> entities = (List<Entity>) mc.world.getEntities();
-            List<Pair<Entity, Double>> entitiesComp = new ArrayList<>();
-            entities.forEach(e -> entitiesComp.add(Pair.of(e, (double) mc.player.distanceTo(e))));
-            entitiesComp.sort(Comparator.comparingDouble(Pair::getSecond));
-            Collections.reverse(entitiesComp);
-            entities.clear();
-            entitiesComp.forEach(p -> entities.add(p.getFirst()));
+            //Get entities and sort by distance, so we render further first
+            Iterable<Entity> entities = mc.world.getEntities();
+            List<Pair<Entity, Double>> entitiesSorted = new ArrayList<>();
+            entities.forEach(e -> entitiesSorted.add(Pair.of(e, (double) mc.player.distanceTo(e))));
+            entitiesSorted.sort(Comparator.comparingDouble(Pair::getSecond));
+            Collections.reverse(entitiesSorted);
 
-            for (Entity entity : entities) {
+            for (Pair<Entity, Double> p : entitiesSorted) {
+                Entity entity = p.getFirst();
                 if (mc.player.distanceTo(entity) < TweakerMoreConfigs.INFO_VIEW_ENTITY_TARGET_DISTANCE.getDoubleValue()) {
                     for (AbstractEntityInfoViewer viewer : entityViewers) {
                         Vec3d vec3d = player.getRotationVec(1.0F).normalize();
