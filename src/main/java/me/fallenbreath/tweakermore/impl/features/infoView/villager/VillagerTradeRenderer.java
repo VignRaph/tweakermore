@@ -33,6 +33,7 @@ import me.fallenbreath.tweakermore.util.render.context.RenderContext;
 import me.fallenbreath.tweakermore.util.render.context.RenderGlobals;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.texture.Sprite;
+import net.minecraft.enchantment.Enchantment;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.passive.AbstractTraderEntity;
 import net.minecraft.item.EnchantedBookItem;
@@ -54,6 +55,7 @@ import net.minecraft.world.World;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 //#if MC >= 12000
 //$$ import net.minecraft.client.render.model.json.ModelTransformationMode;
@@ -118,6 +120,8 @@ public class VillagerTradeRenderer extends AbstractEntityInfoViewer {
         //Filter trades to show only relevant ones
         int nbTradeToShow = 0;
         for (TradeOffer offer : offers) {
+            ItemStack priceItem = offer.getOriginalFirstBuyItem();
+            ItemStack adjustedPriceItem = offer.getAdjustedFirstBuyItem();
             ItemStack soldItem = offer.getSellItem();
             Item item = soldItem.getItem();
             List<BaseText> texts = Lists.newArrayList();
@@ -128,14 +132,27 @@ public class VillagerTradeRenderer extends AbstractEntityInfoViewer {
 
                 for (int k = 0; k < enchants.size(); ++k) {
                     CompoundTag compoundTag = enchants.getCompound(k);
-                    Registry.ENCHANTMENT.getOrEmpty(Identifier.tryParse(compoundTag.getString("id"))).ifPresent((enchant) -> {
-                        if (compoundTag.getInt("lvl") >= enchant.getMaximumLevel()) {
-                            texts.addAll(Objects.requireNonNull(getEnchantmentText(soldItem)));
-                        }
-                    });
+                    Optional<Enchantment> optionalEnchantment = Registry.ENCHANTMENT.getOrEmpty(Identifier.tryParse(compoundTag.getString("id")));
+                    if (!optionalEnchantment.isPresent()) {
+                        continue;
+                    }
+                    Enchantment enchant = optionalEnchantment.get();
+                    if (compoundTag.getInt("lvl") < enchant.getMaximumLevel()) {
+                        continue;
+                    }
+                    //Calculate technical minimum price for the trade
+                    int minPrice = 2 + compoundTag.getInt("lvl") * 3;
+                    if (enchant.isTreasure())
+                        minPrice *= 2;
+
+                    if (TweakerMoreConfigs.INFO_VIEW_VILLAGER_BOOKS_BEST.getBooleanValue()
+                            && priceItem.getCount() > minPrice){
+                        continue;
+                    }
+                    texts.addAll(Objects.requireNonNull(getEnchantmentText(soldItem)));
                 }
 
-//            } else if (Arrays.stream(ITEMS_WITH_ENCHANTS).anyMatch((t) -> t == item)) {
+
             } else if (TweakerMoreConfigs.INFO_VIEW_VILLAGER_ENCHANTED_ITEMS.getBooleanValue() &&
                     TweakerMoreConfigs.INFO_VIEW_VILLAGER_ENCHANTED_ITEMS_RESTRICTION.isAllowed(item)) {
                 ListTag enchants = soldItem.getEnchantments();
@@ -149,7 +166,6 @@ public class VillagerTradeRenderer extends AbstractEntityInfoViewer {
                         }
                     });
                 }
-//                Arrays.stream(ITEMS_WO_ENCHANTS).anyMatch((t) -> t == item)
             } else if (TweakerMoreConfigs.INFO_VIEW_VILLAGER_ITEMS.getBooleanValue() &&
                     TweakerMoreConfigs.INFO_VIEW_VILLAGER_ITEMS_RESTRICTION.isAllowed(item)) {
                 BaseText baseText = (BaseText) item.getName(soldItem);
@@ -181,6 +197,7 @@ public class VillagerTradeRenderer extends AbstractEntityInfoViewer {
                 DeltaY -= 0.5;
             }
         }
+
     }
 
     private double calculateRowWidth (List<BaseText> texts) {

@@ -193,6 +193,9 @@ tweakermore:
     infoViewVillagerBooks:
       .: infoViewVillagerBooks
       comment: Toggles if max level book trades are shown in trades info view
+    infoViewVillagerBooksBest:
+      .: infoViewVillagerBooksBest
+      comment: Toggles if only the trades at the best possible price are shown (price before reductions)
     infoViewVillagerEnchantedItems:
       .: infoViewVillagerEnchantedItems
       comment: Toggles if items with enchantment are shown in trades info view

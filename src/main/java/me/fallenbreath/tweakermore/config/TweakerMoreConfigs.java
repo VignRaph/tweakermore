@@ -214,6 +214,9 @@ public class TweakerMoreConfigs {
     public static final TweakerMoreConfigBoolean INFO_VIEW_VILLAGER_BOOKS = newConfigBoolean("infoViewVillagerBooks", true);
 
     @Config (type = Config.Type.GENERIC, category = Config.Category.FEATURES)
+    public static final TweakerMoreConfigBoolean INFO_VIEW_VILLAGER_BOOKS_BEST = newConfigBoolean("infoViewVillagerBooksBest", true);
+
+    @Config (type = Config.Type.GENERIC, category = Config.Category.FEATURES)
     public static final TweakerMoreConfigBoolean INFO_VIEW_VILLAGER_ENCHANTED_ITEMS = newConfigBoolean("infoViewVillagerEnchantedItems",true);
 
     @Config (type = Config.Type.LIST, category = Config.Category.FEATURES)
